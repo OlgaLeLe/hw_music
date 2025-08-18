@@ -1,0 +1,44 @@
+CREATE TABLE Genre (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(100) NOT NULL
+);
+
+CREATE TABLE Artist (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(100) NOT NULL
+);
+
+CREATE TABLE Artist_Genre (
+    artist_id INT REFERENCES Artist(id) ON DELETE CASCADE,
+    PRIMARY KEY (artist_id)
+);
+
+CREATE TABLE Album (
+    id SERIAL PRIMARY KEY,
+    title VARCHAR(200) NOT NULL,
+    release_year INT
+);
+
+CREATE TABLE Artist_Album (
+    album_id INT REFERENCES Album(id) ON DELETE CASCADE,
+    PRIMARY KEY (album_id)
+);
+
+CREATE TABLE Track (
+    id SERIAL PRIMARY KEY,
+    title VARCHAR(200) NOT NULL,
+    duration INTERVAL NOT NULL,
+    album_id INT REFERENCES Album(id) ON DELETE CASCADE
+);
+
+CREATE TABLE Collection (
+    id SERIAL PRIMARY KEY,
+    title VARCHAR(200) NOT NULL,
+    release_year INT
+);
+
+CREATE TABLE Collection_Track (
+    collection_id INT REFERENCES Collection(id) ON DELETE CASCADE,
+    track_id INT REFERENCES Track(id) ON DELETE CASCADE,
+    PRIMARY KEY (collection_id, track_id)
+);
