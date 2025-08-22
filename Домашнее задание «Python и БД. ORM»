@@ -1,0 +1,210 @@
+Задание 1.
+
+from sqlalchemy import Column, Integer, String, ForeignKey, Float, DateTime
+from sqlalchemy.orm import relationship, declarative_base
+
+Base = declarative_base()
+
+
+class Publisher(Base):
+    tablename = 'publisher'
+
+    id = Column(Integer, primary_key=True)
+    name = Column(String, nullable=False, unique=True)
+
+    books = relationship("Book", back_populates="publisher")
+
+    def __repr__(self):
+        return f"<Publisher(id={self.id}, name='{self.name}')>"
+
+
+class Book(Base):
+    tablename = 'book'
+
+    id = Column(Integer, primary_key=True)
+    title = Column(String, nullable=False)
+    id_publisher = Column(Integer, ForeignKey("publisher.id"), nullable=False)
+
+    publisher = relationship("Publisher", back_populates="books")
+    stocks = relationship("Stock", back_populates="book")
+
+    def __repr__(self):
+        return f"<Book(id={self.id}, title='{self.title}')>"
+
+
+class Shop(Base):
+    tablename = 'shop'
+
+    id = Column(Integer, primary_key=True)
+    name = Column(String, nullable=False, unique=True)
+
+    stocks = relationship("Stock", back_populates="shop")
+
+    def __repr__(self):
+        return f"<Shop(id={self.id}, name='{self.name}')>"
+
+
+class Stock(Base):
+    tablename = 'stock'
+
+    id = Column(Integer, primary_key=True)
+    id_book = Column(Integer, ForeignKey("book.id"), nullable=False)
+    id_shop = Column(Integer, ForeignKey("shop.id"), nullable=False)
+    count = Column(Integer, nullable=False)
+
+    book = relationship("Book", back_populates="stocks")
+    shop = relationship("Shop", back_populates="stocks")
+    sales = relationship("Sale", back_populates="stock")
+
+    def __repr__(self):
+        return f"<Stock(id={self.id}, book_id={self.id_book}, shop_id={self.id_shop}, count={self.count})>"
+
+
+class Sale(Base):
+    tablename = 'sale'
+
+    id = Column(Integer, primary_key=True)
+    price = Column(Float, nullable=False)
+    date_sale = Column(DateTime, nullable=False)
+    id_stock = Column(Integer, ForeignKey("stock.id"), nullable=False)
+    count = Column(Integer, nullable=False)
+
+    stock = relationship("Stock", back_populates="sales")
+
+    def __repr__(self):
+        return f"<Sale(id={self.id}, price={self.price}, date={self.date_sale}, count={self.count})>"
+
+
+Задание 2. 
+
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+from models import Publisher, Book, Shop, Stock, Sale
+
+# подключение (замени на PostgreSQL или SQLite)
+engine = create_engine("sqlite:///books.db")  
+Session = sessionmaker(bind=engine)
+session = Session()
+
+publisher_input = input("Введите имя или ID издателя: ")
+
+query = session.query(Book.title, Shop.name, Sale.price, Sale.date_sale).\
+    join(Book.stocks).\
+    join(Stock.shop).\
+    join(Stock.sales)
+
+if publisher_input.isdigit():
+    query = query.filter(Book.publisher.has(Publisher.id == int(publisher_input)))
+else:
+    query = query.filter(Book.publisher.has(Publisher.name == publisher_input))
+
+for title, shop, price, date in query.all():
+    print(f"{title:<20} | {shop:<12} | {price:<6} | {date.strftime('%d-%m-%Y')}")
+
+Задание 3.
+
+from sqlalchemy import Column, Integer, String, ForeignKey, Float, DateTime
+from sqlalchemy.orm import relationship, declarative_base
+
+Base = declarative_base()
+
+
+class Publisher(Base):
+    tablename = 'publisher'
+
+    id = Column(Integer, primary_key=True)
+    name = Column(String, nullable=False, unique=True)
+
+    books = relationship("Book", back_populates="publisher")
+
+    def __repr__(self):
+        return f"<Publisher(id={self.id}, name='{self.name}')>"
+
+
+class Book(Base):
+    tablename = 'book'
+
+    id = Column(Integer, primary_key=True)
+    title = Column(String, nullable=False)
+    id_publisher = Column(Integer, ForeignKey("publisher.id"), nullable=False)
+
+    publisher = relationship("Publisher", back_populates="books")
+    stocks = relationship("Stock", back_populates="book")
+
+    def __repr__(self):
+        return f"<Book(id={self.id}, title='{self.title}')>"
+
+
+class Shop(Base):
+    tablename = 'shop'
+
+    id = Column(Integer, primary_key=True)
+    name = Column(String, nullable=False, unique=True)
+
+    stocks = relationship("Stock", back_populates="shop")
+
+    def __repr__(self):
+        return f"<Shop(id={self.id}, name='{self.name}')>"
+
+
+class Stock(Base):
+    tablename = 'stock'
+
+    id = Column(Integer, primary_key=True)
+    id_book = Column(Integer, ForeignKey("book.id"), nullable=False)
+    id_shop = Column(Integer, ForeignKey("shop.id"), nullable=False)
+    count = Column(Integer, nullable=False)
+
+    book = relationship("Book", back_populates="stocks")
+    shop = relationship("Shop", back_populates="stocks")
+    sales = relationship("Sale", back_populates="stock")
+
+    def __repr__(self):
+        return f"<Stock(id={self.id}, book_id={self.id_book}, shop_id={self.id_shop}, count={self.count})>"
+
+
+class Sale(Base):
+    tablename = 'sale'
+
+    id = Column(Integer, primary_key=True)
+    price = Column(Float, nullable=False)
+    date_sale = Column(DateTime, nullable=False)
+    id_stock = Column(Integer, ForeignKey("stock.id"), nullable=False)
+    count = Column(Integer, nullable=False)
+
+    stock = relationship("Stock", back_populates="sales")
+
+    def __repr__(self):
+        return f"<Sale(id={self.id}, price={self.price}, date={self.date_sale}, count={self.count})>"
+
+
+
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+from models import Publisher, Book, Shop, Stock, Sale
+
+# подключение (замени на PostgreSQL или SQLite)
+engine = create_engine("sqlite:///books.db")  
+Session = sessionmaker(bind=engine)
+session = Session()
+
+publisher_input = input("Введите имя или ID издателя: ")
+
+query = session.query(Book.title, Shop.name, Sale.price, Sale.date_sale).\
+    join(Book.stocks).\
+    join(Stock.shop).\
+    join(Stock.sales)
+
+if publisher_input.isdigit():
+    query = query.filter(Book.publisher.has(Publisher.id == int(publisher_input)))
+else:
+    query = query.filter(Book.publisher.has(Publisher.name == publisher_input))
+
+for title, shop, price, date in query.all():
+    print(f"{title:<20} | {shop:<12} | {price:<6} | {date.strftime('%d-%m-%Y')}")
+
+
+
+
+
+
